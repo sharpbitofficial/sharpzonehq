@@ -1,4 +1,5 @@
 import heroBg from "@/assets/hero-bg.jpg";
+import logo from "@/assets/logo.jpeg";
 
 const HeroSection = () => {
   return (
@@ -21,6 +22,9 @@ const HeroSection = () => {
 
       {/* Content */}
       <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
+        <div className="mb-6">
+          <img src={logo} alt="SharpZone Logo" className="w-20 h-20 mx-auto rounded-2xl shadow-elevated" />
+        </div>
         <div className="inline-block mb-6 px-4 py-2 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 backdrop-blur-sm">
           <span className="text-primary-foreground/90 text-sm font-medium tracking-wide">
             ✦ Premium Digital Services
