@@ -1,11 +1,16 @@
+import logo from "@/assets/logo.jpeg";
+
 const Footer = () => {
   return (
     <footer className="py-12 px-4 bg-foreground text-background/80 pb-24">
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-          <div>
-            <h3 className="font-display text-2xl font-bold text-background mb-1">SharpZone</h3>
-            <p className="text-background/60 text-sm">Sharpen Your Digital Presence</p>
+          <div className="flex items-center gap-3">
+            <img src={logo} alt="SharpZone" className="w-10 h-10 rounded-lg" />
+            <div>
+              <h3 className="font-display text-2xl font-bold text-background mb-1">SharpZone</h3>
+              <p className="text-background/60 text-sm">Sharpen Your Digital Presence</p>
+            </div>
           </div>
           <div className="flex gap-8 text-sm">
             <a href="#services" className="hover:text-background transition-colors">Services</a>
