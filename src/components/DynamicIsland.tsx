@@ -1,17 +1,21 @@
 import { useState } from "react";
 import { Home, Layers, BookOpen, User, Shield } from "lucide-react";
-
-const menuItems = [
-  { icon: Home, label: "Home", href: "#" },
-  { icon: Layers, label: "Services", href: "#services" },
-  { icon: BookOpen, label: "Blog", href: "#blog" },
-  { icon: User, label: "Profile", href: "#profile" },
-  { icon: Shield, label: "Admin", href: "#admin", hasNotification: true },
-];
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const DynamicIsland = () => {
   const [expanded, setExpanded] = useState(false);
-  const [activeItem, setActiveItem] = useState("Home");
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user, isAdmin } = useAuth();
+
+  const menuItems = [
+    { icon: Home, label: "Home", action: () => { if (location.pathname === "/") { window.scrollTo({ top: 0, behavior: "smooth" }); } else { navigate("/"); } } },
+    { icon: Layers, label: "Services", action: () => { if (location.pathname === "/") { document.getElementById("services")?.scrollIntoView({ behavior: "smooth" }); } else { navigate("/"); setTimeout(() => document.getElementById("services")?.scrollIntoView({ behavior: "smooth" }), 300); } } },
+    { icon: BookOpen, label: "Blog", action: () => { if (location.pathname === "/") { document.getElementById("blog")?.scrollIntoView({ behavior: "smooth" }); } else { navigate("/"); setTimeout(() => document.getElementById("blog")?.scrollIntoView({ behavior: "smooth" }), 300); } } },
+    { icon: User, label: user ? "Profile" : "Login", action: () => navigate(user ? "/profile" : "/login") },
+    ...(isAdmin ? [{ icon: Shield, label: "Admin", action: () => navigate("/admin"), hasNotification: true }] : []),
+  ];
 
   return (
     <nav className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50">
@@ -27,14 +31,18 @@ const DynamicIsland = () => {
       >
         <div className="flex items-center justify-around gap-1">
           {menuItems.map((item) => {
-            const isActive = activeItem === item.label;
+            const isActive =
+              (item.label === "Home" && location.pathname === "/") ||
+              (item.label === "Profile" && location.pathname === "/profile") ||
+              (item.label === "Login" && location.pathname === "/login") ||
+              (item.label === "Admin" && location.pathname === "/admin");
+
             return (
-              <a
+              <button
                 key={item.label}
-                href={item.href}
                 onClick={(e) => {
                   e.stopPropagation();
-                  setActiveItem(item.label);
+                  item.action();
                 }}
                 className={`relative flex items-center gap-2 px-3 py-2.5 rounded-full transition-all duration-300 ${
                   isActive
@@ -48,10 +56,10 @@ const DynamicIsland = () => {
                     {item.label}
                   </span>
                 )}
-                {item.hasNotification && (
+                {"hasNotification" in item && item.hasNotification && (
                   <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full" />
                 )}
-              </a>
+              </button>
             );
           })}
         </div>
