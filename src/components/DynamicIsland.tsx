@@ -1,13 +1,30 @@
 import { useState } from "react";
-import { Home, Layers, BookOpen, User, Shield } from "lucide-react";
+import { Chrome as Home, Layers, BookOpen, User, Shield } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const DynamicIsland = () => {
   const [expanded, setExpanded] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isAdmin } = useAuth();
+
+  const { data: unreadCount = 0 } = useQuery({
+    queryKey: ["unread-notifications", user?.id],
+    queryFn: async () => {
+      if (!user) return 0;
+      const { count } = await supabase
+        .from("notifications")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("is_read", false);
+      return count || 0;
+    },
+    enabled: !!user,
+    refetchInterval: 30000,
+  });
 
   const menuItems = [
     { icon: Home, label: "Home", action: () => { if (location.pathname === "/") { window.scrollTo({ top: 0, behavior: "smooth" }); } else { navigate("/"); } } },
@@ -56,9 +73,13 @@ const DynamicIsland = () => {
                     {item.label}
                   </span>
                 )}
-                {"hasNotification" in item && item.hasNotification && (
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full" />
-                )}
+                {("hasNotification" in item && item.hasNotification) || (item.label === "Admin" && unreadCount > 0) ? (
+                  <span className="absolute top-1.5 right-1.5 min-w-[8px] h-2 bg-destructive rounded-full flex items-center justify-center">
+                    {unreadCount > 0 && item.label === "Admin" && (
+                      <span className="text-[8px] font-bold text-primary-foreground px-1">{unreadCount > 9 ? "9+" : unreadCount}</span>
+                    )}
+                  </span>
+                ) : null}
               </button>
             );
           })}

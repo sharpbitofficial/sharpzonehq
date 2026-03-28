@@ -2,13 +2,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Navigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { BarChart3, Users, ShoppingCart, Ticket, Plus, LogOut, Home } from "lucide-react";
+import { ChartBar as BarChart3, Users, ShoppingCart, Ticket, Plus, LogOut, Chrome as Home, UserCog, Handshake } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import TeamMembersManagement from "@/components/TeamMembersManagement";
 
 const AdminPanel = () => {
   const { user, profile, isAdmin, isCeo, isLoading, signOut } = useAuth();
-  const [activeTab, setActiveTab] = useState<"dashboard" | "events" | "orders" | "customers" | "coupons">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "events" | "orders" | "customers" | "coupons" | "team" | "partners">("dashboard");
 
   if (isLoading) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-pulse text-muted-foreground">Loading...</div></div>;
   if (!user || !isAdmin) return <Navigate to="/login" />;
@@ -38,6 +39,8 @@ const AdminPanel = () => {
             { key: "orders", label: "Orders", icon: ShoppingCart },
             { key: "customers", label: "Customers", icon: Users },
             { key: "coupons", label: "Coupons", icon: Ticket },
+            { key: "team", label: "Team", icon: UserCog },
+            { key: "partners", label: "Partners", icon: Handshake },
           ].map((item) => (
             <button
               key={item.key}
@@ -54,7 +57,7 @@ const AdminPanel = () => {
 
         {/* Mobile tabs */}
         <div className="md:hidden flex overflow-x-auto border-b border-border bg-card px-2 py-2 gap-1 w-full fixed top-[52px] z-30">
-          {["dashboard", "events", "orders", "customers", "coupons"].map((tab) => (
+          {["dashboard", "events", "orders", "customers", "coupons", "team", "partners"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab as any)}
@@ -74,6 +77,8 @@ const AdminPanel = () => {
           {activeTab === "orders" && <OrdersTab />}
           {activeTab === "customers" && <CustomersTab />}
           {activeTab === "coupons" && <CouponsTab />}
+          {activeTab === "team" && <TeamMembersManagement />}
+          {activeTab === "partners" && <PartnersTab />}
         </main>
       </div>
     </div>
@@ -310,6 +315,147 @@ const CouponsTab = () => {
           </div>
         ))}
         {coupons.length === 0 && <p className="text-muted-foreground text-center py-8">No coupons yet.</p>}
+      </div>
+    </div>
+  );
+};
+
+const PartnersTab = () => {
+  const { data: partners = [], refetch } = useQuery({
+    queryKey: ["admin-partners"],
+    queryFn: async () => {
+      const { data } = await supabase.from("partners").select("*").order("display_order", { ascending: true });
+      return data || [];
+    },
+  });
+
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    logo_url: "",
+    website_url: "",
+    display_order: 0,
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const { error } = editingId
+      ? await supabase.from("partners").update(formData).eq("id", editingId)
+      : await supabase.from("partners").insert(formData);
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
+    toast.success(editingId ? "Partner updated!" : "Partner added!");
+    setShowForm(false);
+    setEditingId(null);
+    setFormData({ name: "", logo_url: "", website_url: "", display_order: 0 });
+    refetch();
+  };
+
+  const handleEdit = (partner: any) => {
+    setEditingId(partner.id);
+    setFormData({
+      name: partner.name,
+      logo_url: partner.logo_url,
+      website_url: partner.website_url,
+      display_order: partner.display_order,
+    });
+    setShowForm(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this partner?")) return;
+    const { error } = await supabase.from("partners").delete().eq("id", id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Partner deleted!");
+      refetch();
+    }
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-display text-xl font-bold text-foreground">Business Partners</h2>
+        <button
+          onClick={() => {
+            setShowForm(!showForm);
+            setEditingId(null);
+            setFormData({ name: "", logo_url: "", website_url: "", display_order: 0 });
+          }}
+          className="flex items-center gap-1 px-3 py-2 bg-primary text-primary-foreground text-sm rounded-lg hover:opacity-90 transition"
+        >
+          <Plus className="w-4 h-4" /> Add Partner
+        </button>
+      </div>
+
+      {showForm && (
+        <form onSubmit={handleSubmit} className="bg-card rounded-xl p-4 border border-border mb-4 space-y-3">
+          <input
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            placeholder="Partner Name"
+            required
+            className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm"
+          />
+          <input
+            value={formData.logo_url}
+            onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
+            placeholder="Logo URL"
+            className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm"
+          />
+          <input
+            value={formData.website_url}
+            onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
+            placeholder="Website URL"
+            className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm"
+          />
+          <input
+            value={formData.display_order}
+            onChange={(e) => setFormData({ ...formData, display_order: Number(e.target.value) })}
+            placeholder="Display Order"
+            type="number"
+            className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm"
+          />
+          <button type="submit" className="px-4 py-2 bg-primary text-primary-foreground text-sm rounded-lg">
+            {editingId ? "Update" : "Create"}
+          </button>
+        </form>
+      )}
+
+      <div className="space-y-2">
+        {partners.map((p: any) => (
+          <div key={p.id} className="bg-card rounded-xl p-4 border border-border flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {p.logo_url && (
+                <img src={p.logo_url} alt={p.name} className="w-16 h-12 object-contain" />
+              )}
+              <div>
+                <p className="font-medium text-foreground">{p.name}</p>
+                <p className="text-xs text-muted-foreground">{p.website_url}</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleEdit(p)}
+                className="p-2 bg-secondary text-secondary-foreground rounded-lg hover:opacity-80 transition text-xs"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => handleDelete(p.id)}
+                className="p-2 bg-destructive text-destructive-foreground rounded-lg hover:opacity-80 transition text-xs"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        ))}
+        {partners.length === 0 && <p className="text-muted-foreground text-center py-8">No partners yet.</p>}
       </div>
     </div>
   );
