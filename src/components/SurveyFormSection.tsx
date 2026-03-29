@@ -35,10 +35,10 @@ const SurveyFormSection = () => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await supabase.from("form_responses").insert({
-      responses: formData,
-      submitted_at: new Date(),
-    });
+    const { error } = await supabase.from("form_responses").insert([{
+      responses: formData as any,
+      submitted_at: new Date().toISOString(),
+    }]);
 
     setLoading(false);
 
@@ -66,7 +66,7 @@ const SurveyFormSection = () => {
               </p>
             </div>
 
-            {formFields.map((field: FormField) => (
+            {(formFields as any[]).map((field: FormField) => (
               <div key={field.id} className="space-y-2 animate-fade-in">
                 <label className="text-sm font-medium text-foreground">
                   {field.question}

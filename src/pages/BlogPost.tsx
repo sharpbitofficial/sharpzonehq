@@ -66,7 +66,7 @@ const BlogPost = () => {
                 SharpZone Team
               </div>
             )}
-            {post.tags?.length > 0 && (
+            {Array.isArray(post.tags) && post.tags.length > 0 && (
               <div className="flex items-center gap-2">
                 <Tag className="w-4 h-4" />
                 {post.tags.length} tags
@@ -84,10 +84,10 @@ const BlogPost = () => {
           />
         </AnimatedSection>
 
-        {post.tags && post.tags.length > 0 && (
+        {Array.isArray(post.tags) && post.tags.length > 0 && (
           <AnimatedSection className="pt-8 border-t border-border">
             <div className="flex flex-wrap gap-2">
-              {post.tags.map((tag: string) => (
+              {(post.tags as string[]).map((tag: string) => (
                 <span
                   key={tag}
                   className="px-4 py-2 bg-secondary text-foreground rounded-full text-sm font-medium hover:bg-primary hover:text-primary-foreground transition"
