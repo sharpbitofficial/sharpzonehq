@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      blog_posts: {
+        Row: {
+          author_id: string | null
+          category: string | null
+          content: string | null
+          created_at: string | null
+          excerpt: string | null
+          id: string
+          is_published: boolean | null
+          published_at: string | null
+          slug: string
+          tags: Json | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          author_id?: string | null
+          category?: string | null
+          content?: string | null
+          created_at?: string | null
+          excerpt?: string | null
+          id?: string
+          is_published?: boolean | null
+          published_at?: string | null
+          slug: string
+          tags?: Json | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          author_id?: string | null
+          category?: string | null
+          content?: string | null
+          created_at?: string | null
+          excerpt?: string | null
+          id?: string
+          is_published?: boolean | null
+          published_at?: string | null
+          slug?: string
+          tags?: Json | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       coupons: {
         Row: {
           code: string
@@ -71,6 +119,105 @@ export type Database = {
           thumbnail_url?: string | null
           title?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      form_fields: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          options: Json | null
+          question: string
+          required: boolean | null
+          type: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          options?: Json | null
+          question: string
+          required?: boolean | null
+          type?: string
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          options?: Json | null
+          question?: string
+          required?: boolean | null
+          type?: string
+        }
+        Relationships: []
+      }
+      form_responses: {
+        Row: {
+          created_at: string | null
+          id: string
+          responses: Json
+          submitted_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          responses?: Json
+          submitted_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          responses?: Json
+          submitted_at?: string | null
+        }
+        Relationships: []
+      }
+      newsletter_subscriptions: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+          title?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -137,6 +284,36 @@ export type Database = {
           },
         ]
       }
+      partners: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          logo_url: string | null
+          name: string
+          website_url: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          name: string
+          website_url?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          name?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -164,6 +341,36 @@ export type Database = {
         }
         Relationships: []
       }
+      team_members: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          display_order: number | null
+          full_name: string
+          id: string
+          is_active: boolean | null
+          position: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          full_name: string
+          id?: string
+          is_active?: boolean | null
+          position?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          full_name?: string
+          id?: string
+          is_active?: boolean | null
+          position?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -178,6 +385,36 @@ export type Database = {
         Update: {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          created_at: string | null
+          dark_mode: boolean | null
+          email_notifications: boolean | null
+          id: string
+          language: string | null
+          notifications_enabled: boolean | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          dark_mode?: boolean | null
+          email_notifications?: boolean | null
+          id?: string
+          language?: string | null
+          notifications_enabled?: boolean | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          dark_mode?: boolean | null
+          email_notifications?: boolean | null
+          id?: string
+          language?: string | null
+          notifications_enabled?: boolean | null
           user_id?: string
         }
         Relationships: []
