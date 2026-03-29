@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Chrome as Home, Layers, BookOpen, User, Shield } from "lucide-react";
+import { Chrome as Home, Layers, BookOpen, User, Shield, Settings as SettingsIcon } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -31,6 +31,7 @@ const DynamicIsland = () => {
     { icon: Layers, label: "Services", action: () => { if (location.pathname === "/") { document.getElementById("services")?.scrollIntoView({ behavior: "smooth" }); } else { navigate("/"); setTimeout(() => document.getElementById("services")?.scrollIntoView({ behavior: "smooth" }), 300); } } },
     { icon: BookOpen, label: "Blog", action: () => { if (location.pathname === "/") { document.getElementById("blog")?.scrollIntoView({ behavior: "smooth" }); } else { navigate("/"); setTimeout(() => document.getElementById("blog")?.scrollIntoView({ behavior: "smooth" }), 300); } } },
     { icon: User, label: user ? "Profile" : "Login", action: () => navigate(user ? "/profile" : "/login") },
+    { icon: SettingsIcon, label: "Settings", action: () => navigate("/settings") },
     ...(isAdmin ? [{ icon: Shield, label: "Admin", action: () => navigate("/admin"), hasNotification: true }] : []),
   ];
 

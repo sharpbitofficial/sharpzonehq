@@ -1,4 +1,7 @@
+import { useState } from "react";
+import EntryAnimation from "@/components/EntryAnimation";
 import HeroSection from "@/components/HeroSection";
+import SurveyFormSection from "@/components/SurveyFormSection";
 import ServicesSection from "@/components/ServicesSection";
 import PortfolioSection from "@/components/PortfolioSection";
 import TeamSection from "@/components/TeamSection";
@@ -12,9 +15,13 @@ import DynamicIsland from "@/components/DynamicIsland";
 import Footer from "@/components/Footer";
 
 const Index = () => {
+  const [showAnimation, setShowAnimation] = useState(true);
+
   return (
     <div className="min-h-screen bg-background">
+      {showAnimation && <EntryAnimation onComplete={() => setShowAnimation(false)} />}
       <HeroSection />
+      <SurveyFormSection />
       <ServicesSection />
       <PortfolioSection />
       <TeamSection />

@@ -2,14 +2,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Navigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ChartBar as BarChart3, Users, ShoppingCart, Ticket, Plus, LogOut, Chrome as Home, UserCog, Handshake } from "lucide-react";
+import { ChartBar as BarChart3, Users, ShoppingCart, Ticket, Plus, LogOut, Chrome as Home, UserCog, Handshake, BookOpen } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import TeamMembersManagement from "@/components/TeamMembersManagement";
 
 const AdminPanel = () => {
   const { user, profile, isAdmin, isCeo, isLoading, signOut } = useAuth();
-  const [activeTab, setActiveTab] = useState<"dashboard" | "events" | "orders" | "customers" | "coupons" | "team" | "partners">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "events" | "orders" | "customers" | "coupons" | "team" | "partners" | "survey" | "responses" | "blog">("dashboard");
 
   if (isLoading) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-pulse text-muted-foreground">Loading...</div></div>;
   if (!user || !isAdmin) return <Navigate to="/login" />;
@@ -41,6 +41,9 @@ const AdminPanel = () => {
             { key: "coupons", label: "Coupons", icon: Ticket },
             { key: "team", label: "Team", icon: UserCog },
             { key: "partners", label: "Partners", icon: Handshake },
+            { key: "blog", label: "Blog Posts", icon: BookOpen },
+            { key: "survey", label: "Survey Form", icon: BarChart3 },
+            { key: "responses", label: "Responses", icon: Users },
           ].map((item) => (
             <button
               key={item.key}
@@ -79,6 +82,9 @@ const AdminPanel = () => {
           {activeTab === "coupons" && <CouponsTab />}
           {activeTab === "team" && <TeamMembersManagement />}
           {activeTab === "partners" && <PartnersTab />}
+          {activeTab === "blog" && <BlogTab />}
+          {activeTab === "survey" && <SurveyFieldsTab />}
+          {activeTab === "responses" && <SurveyResponsesTab />}
         </main>
       </div>
     </div>
@@ -456,6 +462,409 @@ const PartnersTab = () => {
           </div>
         ))}
         {partners.length === 0 && <p className="text-muted-foreground text-center py-8">No partners yet.</p>}
+      </div>
+    </div>
+  );
+};
+
+const SurveyFieldsTab = () => {
+  const { data: fields = [], refetch } = useQuery({
+    queryKey: ["admin-form-fields"],
+    queryFn: async () => {
+      const { data } = await supabase.from("form_fields").select("*").order("display_order", { ascending: true });
+      return data || [];
+    },
+  });
+
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    type: "text",
+    question: "",
+    options: "",
+    required: false,
+    display_order: 0,
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const options = formData.options ? formData.options.split(",").map((o) => o.trim()) : [];
+    const payload = { ...formData, options };
+
+    const { error } = editingId
+      ? await supabase.from("form_fields").update(payload).eq("id", editingId)
+      : await supabase.from("form_fields").insert(payload);
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
+    toast.success(editingId ? "Field updated!" : "Field added!");
+    setShowForm(false);
+    setEditingId(null);
+    setFormData({ type: "text", question: "", options: "", required: false, display_order: 0 });
+    refetch();
+  };
+
+  const handleEdit = (field: any) => {
+    setEditingId(field.id);
+    setFormData({
+      type: field.type,
+      question: field.question,
+      options: field.options?.join(", ") || "",
+      required: field.required,
+      display_order: field.display_order,
+    });
+    setShowForm(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this field?")) return;
+    const { error } = await supabase.from("form_fields").delete().eq("id", id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Field deleted!");
+      refetch();
+    }
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-display text-xl font-bold text-foreground">Survey Form Fields</h2>
+        <button
+          onClick={() => {
+            setShowForm(!showForm);
+            setEditingId(null);
+            setFormData({ type: "text", question: "", options: "", required: false, display_order: 0 });
+          }}
+          className="flex items-center gap-1 px-3 py-2 bg-primary text-primary-foreground text-sm rounded-lg hover:opacity-90 transition"
+        >
+          <Plus className="w-4 h-4" /> Add Field
+        </button>
+      </div>
+
+      {showForm && (
+        <form onSubmit={handleSubmit} className="bg-card rounded-xl p-4 border border-border mb-4 space-y-3">
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Field Type</label>
+            <select
+              value={formData.type}
+              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+              className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm"
+            >
+              <option value="text">Text</option>
+              <option value="textarea">Text Area</option>
+              <option value="multiple_choice">Multiple Choice</option>
+              <option value="checkbox">Checkbox</option>
+              <option value="dropdown">Dropdown</option>
+            </select>
+          </div>
+          <input
+            value={formData.question}
+            onChange={(e) => setFormData({ ...formData, question: e.target.value })}
+            placeholder="Question"
+            required
+            className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm"
+          />
+          {["multiple_choice", "checkbox", "dropdown"].includes(formData.type) && (
+            <input
+              value={formData.options}
+              onChange={(e) => setFormData({ ...formData, options: e.target.value })}
+              placeholder="Options (comma-separated)"
+              className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm"
+            />
+          )}
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={formData.required}
+              onChange={(e) => setFormData({ ...formData, required: e.target.checked })}
+              id="required"
+              className="w-4 h-4"
+            />
+            <label htmlFor="required" className="text-sm text-foreground">Required</label>
+          </div>
+          <button type="submit" className="px-4 py-2 bg-primary text-primary-foreground text-sm rounded-lg">
+            {editingId ? "Update" : "Create"}
+          </button>
+        </form>
+      )}
+
+      <div className="space-y-2">
+        {fields.map((f: any) => (
+          <div key={f.id} className="bg-card rounded-xl p-4 border border-border">
+            <div className="flex items-start justify-between mb-2">
+              <div>
+                <p className="font-medium text-foreground">{f.question}</p>
+                <p className="text-xs text-muted-foreground">{f.type} {f.required && "• Required"}</p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleEdit(f)}
+                  className="p-2 bg-secondary text-secondary-foreground rounded-lg hover:opacity-80 transition text-xs"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(f.id)}
+                  className="p-2 bg-destructive text-destructive-foreground rounded-lg hover:opacity-80 transition text-xs"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+            {f.options && f.options.length > 0 && (
+              <p className="text-xs text-muted-foreground">Options: {f.options.join(", ")}</p>
+            )}
+          </div>
+        ))}
+        {fields.length === 0 && <p className="text-muted-foreground text-center py-8">No survey fields yet.</p>}
+      </div>
+    </div>
+  );
+};
+
+const SurveyResponsesTab = () => {
+  const { data: responses = [] } = useQuery({
+    queryKey: ["admin-form-responses"],
+    queryFn: async () => {
+      const { data } = await supabase.from("form_responses").select("*").order("created_at", { ascending: false });
+      return data || [];
+    },
+  });
+
+  const handleExport = () => {
+    if (responses.length === 0) {
+      toast.error("No responses to export");
+      return;
+    }
+
+    const headers = ["Submitted At", "Responses"];
+    const rows = responses.map((r: any) => [
+      new Date(r.submitted_at).toLocaleString(),
+      JSON.stringify(r.responses),
+    ]);
+
+    const csv = [headers, ...rows].map((row) => row.map((cell) => `"${cell}"`).join(",")).join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `survey-responses-${Date.now()}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+
+    toast.success("Responses exported!");
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-display text-xl font-bold text-foreground">Survey Responses ({responses.length})</h2>
+        <button
+          onClick={handleExport}
+          className="px-4 py-2 bg-primary text-primary-foreground text-sm rounded-lg hover:opacity-90 transition"
+        >
+          Export as CSV
+        </button>
+      </div>
+
+      <div className="space-y-2">
+        {responses.map((r: any) => (
+          <div key={r.id} className="bg-card rounded-xl p-4 border border-border">
+            <p className="text-sm text-muted-foreground mb-2">{new Date(r.submitted_at).toLocaleString()}</p>
+            <pre className="bg-background p-2 rounded-lg text-xs overflow-auto max-h-32 text-foreground">
+              {JSON.stringify(r.responses, null, 2)}
+            </pre>
+          </div>
+        ))}
+        {responses.length === 0 && <p className="text-muted-foreground text-center py-8">No responses yet.</p>}
+      </div>
+    </div>
+  );
+};
+
+const BlogTab = () => {
+  const { data: posts = [], refetch } = useQuery({
+    queryKey: ["admin-blog-posts"],
+    queryFn: async () => {
+      const { data } = await supabase.from("blog_posts").select("*").order("created_at", { ascending: false });
+      return data || [];
+    },
+  });
+
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    title: "",
+    slug: "",
+    excerpt: "",
+    content: "",
+    category: "General",
+    tags: "",
+    thumbnail_url: "",
+    is_published: false,
+  });
+
+  const generateSlug = (title: string) => {
+    return title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const slug = formData.slug || generateSlug(formData.title);
+    const tags = formData.tags ? formData.tags.split(",").map((t) => t.trim()) : [];
+    const payload = { ...formData, slug, tags };
+
+    const { error } = editingId
+      ? await supabase.from("blog_posts").update(payload).eq("id", editingId)
+      : await supabase.from("blog_posts").insert(payload);
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
+    toast.success(editingId ? "Post updated!" : "Post created!");
+    setShowForm(false);
+    setEditingId(null);
+    setFormData({ title: "", slug: "", excerpt: "", content: "", category: "General", tags: "", thumbnail_url: "", is_published: false });
+    refetch();
+  };
+
+  const handleEdit = (post: any) => {
+    setEditingId(post.id);
+    setFormData({
+      title: post.title,
+      slug: post.slug,
+      excerpt: post.excerpt,
+      content: post.content,
+      category: post.category,
+      tags: post.tags?.join(", ") || "",
+      thumbnail_url: post.thumbnail_url,
+      is_published: post.is_published,
+    });
+    setShowForm(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this post?")) return;
+    const { error } = await supabase.from("blog_posts").delete().eq("id", id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Post deleted!");
+      refetch();
+    }
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-display text-xl font-bold text-foreground">Blog Posts</h2>
+        <button
+          onClick={() => {
+            setShowForm(!showForm);
+            setEditingId(null);
+            setFormData({ title: "", slug: "", excerpt: "", content: "", category: "General", tags: "", thumbnail_url: "", is_published: false });
+          }}
+          className="flex items-center gap-1 px-3 py-2 bg-primary text-primary-foreground text-sm rounded-lg hover:opacity-90 transition"
+        >
+          <Plus className="w-4 h-4" /> New Post
+        </button>
+      </div>
+
+      {showForm && (
+        <form onSubmit={handleSubmit} className="bg-card rounded-xl p-4 border border-border mb-4 space-y-3">
+          <input
+            value={formData.title}
+            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            placeholder="Title"
+            required
+            className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm"
+          />
+          <input
+            value={formData.slug}
+            onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+            placeholder="Slug (auto-generated if empty)"
+            className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm"
+          />
+          <textarea
+            value={formData.excerpt}
+            onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
+            placeholder="Excerpt"
+            rows={2}
+            className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm resize-none"
+          />
+          <textarea
+            value={formData.content}
+            onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+            placeholder="Content"
+            rows={5}
+            className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm resize-none"
+          />
+          <input
+            value={formData.category}
+            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+            placeholder="Category"
+            className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm"
+          />
+          <input
+            value={formData.tags}
+            onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+            placeholder="Tags (comma-separated)"
+            className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm"
+          />
+          <input
+            value={formData.thumbnail_url}
+            onChange={(e) => setFormData({ ...formData, thumbnail_url: e.target.value })}
+            placeholder="Thumbnail URL"
+            className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm"
+          />
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={formData.is_published}
+              onChange={(e) => setFormData({ ...formData, is_published: e.target.checked })}
+              className="w-4 h-4"
+            />
+            <span className="text-sm text-foreground">Publish Post</span>
+          </label>
+          <button type="submit" className="px-4 py-2 bg-primary text-primary-foreground text-sm rounded-lg">
+            {editingId ? "Update" : "Create"}
+          </button>
+        </form>
+      )}
+
+      <div className="space-y-2">
+        {posts.map((p: any) => (
+          <div key={p.id} className="bg-card rounded-xl p-4 border border-border">
+            <div className="flex items-start justify-between mb-2">
+              <div>
+                <p className="font-medium text-foreground">{p.title}</p>
+                <p className="text-xs text-muted-foreground">{p.category} {p.is_published ? "• Published" : "• Draft"}</p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleEdit(p)}
+                  className="p-2 bg-secondary text-secondary-foreground rounded-lg hover:opacity-80 transition text-xs"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(p.id)}
+                  className="p-2 bg-destructive text-destructive-foreground rounded-lg hover:opacity-80 transition text-xs"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground line-clamp-1">{p.excerpt}</p>
+          </div>
+        ))}
+        {posts.length === 0 && <p className="text-muted-foreground text-center py-8">No blog posts yet.</p>}
       </div>
     </div>
   );
