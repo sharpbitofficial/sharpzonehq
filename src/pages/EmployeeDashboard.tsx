@@ -37,7 +37,7 @@ const EmployeeDashboard = () => {
     <div className="min-h-screen bg-background">
       <HamburgerMenu />
       {/* Silver-themed header for employees */}
-      <div className="bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 border-b border-border">
+      <div className="bg-gradient-to-r from-muted to-secondary border-b border-border">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <h1 className="font-display text-2xl font-bold text-foreground">
             Welcome, {profile?.full_name || "Sir/Madam"}!

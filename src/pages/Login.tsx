@@ -13,12 +13,22 @@ const Login = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success("Welcome back!");
+      // Check if CEO
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", data.user.id);
+      const isCeo = roles?.some((r) => r.role === "ceo");
+      if (isCeo) {
+        toast.success("You Are Welcome Honourable CEO Mahdin Hossain Mahin Sir!", { duration: 5000 });
+      } else {
+        toast.success("Welcome back, Sir/Madam!");
+      }
       navigate("/");
     }
   };
