@@ -21,6 +21,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {showAnimation && <EntryAnimation onComplete={() => setShowAnimation(false)} />}
+      <HamburgerMenu />
       <HeroSection />
       <SurveyFormSection />
       <ServicesSection />
