@@ -8,6 +8,9 @@ import ChatBot from "@/components/ChatBot";
 import Index from "./pages/Index.tsx";
 import Login from "./pages/Login.tsx";
 import Signup from "./pages/Signup.tsx";
+import EmployeeLogin from "./pages/EmployeeLogin.tsx";
+import EmployeeSignup from "./pages/EmployeeSignup.tsx";
+import EmployeeDashboard from "./pages/EmployeeDashboard.tsx";
 import Profile from "./pages/Profile.tsx";
 import Settings from "./pages/Settings.tsx";
 import Blog from "./pages/Blog.tsx";
@@ -29,6 +32,9 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/employee-login" element={<EmployeeLogin />} />
+            <Route path="/employee-signup" element={<EmployeeSignup />} />
+            <Route path="/employee-dashboard" element={<EmployeeDashboard />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/blog" element={<Blog />} />

@@ -12,6 +12,7 @@ import FAQSection from "@/components/FAQSection";
 import ContactSection from "@/components/ContactSection";
 import NewsletterSection from "@/components/NewsletterSection";
 import DynamicIsland from "@/components/DynamicIsland";
+import HamburgerMenu from "@/components/HamburgerMenu";
 import Footer from "@/components/Footer";
 
 const Index = () => {
@@ -20,6 +21,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {showAnimation && <EntryAnimation onComplete={() => setShowAnimation(false)} />}
+      <HamburgerMenu />
       <HeroSection />
       <SurveyFormSection />
       <ServicesSection />
