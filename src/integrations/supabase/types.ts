@@ -89,6 +89,51 @@ export type Database = {
         }
         Relationships: []
       }
+      employee_applications: {
+        Row: {
+          address: string
+          created_at: string | null
+          email: string
+          full_name: string
+          id: string
+          institution: string | null
+          phone: string
+          profession: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string
+          created_at?: string | null
+          email: string
+          full_name: string
+          id?: string
+          institution?: string | null
+          phone?: string
+          profession?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string
+          created_at?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          institution?: string | null
+          phone?: string
+          profession?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           created_at: string | null
