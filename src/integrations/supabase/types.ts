@@ -62,6 +62,36 @@ export type Database = {
         }
         Relationships: []
       }
+      company_holidays: {
+        Row: {
+          ceo_note: string | null
+          created_at: string | null
+          created_by: string
+          holiday_date: string
+          id: string
+          message: string | null
+          title: string
+        }
+        Insert: {
+          ceo_note?: string | null
+          created_at?: string | null
+          created_by: string
+          holiday_date: string
+          id?: string
+          message?: string | null
+          title: string
+        }
+        Update: {
+          ceo_note?: string | null
+          created_at?: string | null
+          created_by?: string
+          holiday_date?: string
+          id?: string
+          message?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       coupons: {
         Row: {
           code: string
@@ -382,6 +412,104 @@ export type Database = {
           full_name?: string
           id?: string
           phone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      task_assignments: {
+        Row: {
+          assigned_by: string
+          assigned_to: string
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          report_file_url: string | null
+          report_text: string | null
+          score: number | null
+          status: string
+          task_id: string
+          transferred_from: string | null
+          transferred_to: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_by: string
+          assigned_to: string
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          report_file_url?: string | null
+          report_text?: string | null
+          score?: number | null
+          status?: string
+          task_id: string
+          transferred_from?: string | null
+          transferred_to?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_by?: string
+          assigned_to?: string
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          report_file_url?: string | null
+          report_text?: string | null
+          score?: number | null
+          status?: string
+          task_id?: string
+          transferred_from?: string | null
+          transferred_to?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_assignments_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tasks: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          deadline: string | null
+          description: string | null
+          frequency: string | null
+          id: string
+          is_emergency: boolean | null
+          priority: string
+          status: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          deadline?: string | null
+          description?: string | null
+          frequency?: string | null
+          id?: string
+          is_emergency?: boolean | null
+          priority?: string
+          status?: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          deadline?: string | null
+          description?: string | null
+          frequency?: string | null
+          id?: string
+          is_emergency?: boolean | null
+          priority?: string
+          status?: string
+          title?: string
           updated_at?: string | null
         }
         Relationships: []
