@@ -1,5 +1,3 @@
-import { useState } from "react";
-import EntryAnimation from "@/components/EntryAnimation";
 import HeroSection from "@/components/HeroSection";
 import SurveyFormSection from "@/components/SurveyFormSection";
 import ServicesSection from "@/components/ServicesSection";
@@ -16,11 +14,8 @@ import HamburgerMenu from "@/components/HamburgerMenu";
 import Footer from "@/components/Footer";
 
 const Index = () => {
-  const [showAnimation, setShowAnimation] = useState(true);
-
   return (
     <div className="min-h-screen bg-background">
-      {showAnimation && <EntryAnimation onComplete={() => setShowAnimation(false)} />}
       <HamburgerMenu />
       <HeroSection />
       <SurveyFormSection />
