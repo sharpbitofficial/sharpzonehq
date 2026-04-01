@@ -594,7 +594,33 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      holidays_staff_view: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          holiday_date: string | null
+          id: string | null
+          message: string | null
+          title: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          holiday_date?: string | null
+          id?: string | null
+          message?: string | null
+          title?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          holiday_date?: string | null
+          id?: string | null
+          message?: string | null
+          title?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {

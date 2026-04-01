@@ -58,7 +58,7 @@ const EmployeeDashboard = () => {
       const today = new Date().toISOString().split("T")[0];
       const { data } = await supabase
         .from("company_holidays")
-        .select("*")
+        .select("id, title, holiday_date, message, created_by, created_at")
         .gte("holiday_date", today)
         .order("holiday_date", { ascending: true })
         .limit(5);
@@ -171,7 +171,7 @@ const EmployeeDashboard = () => {
         <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white p-4 text-center">
           <p className="font-display font-bold text-lg">🎉 Today is {todayHoliday.title}!</p>
           {todayHoliday.message && <p className="text-sm mt-1">{todayHoliday.message}</p>}
-          {todayHoliday.ceo_note && <p className="text-xs mt-1 italic">CEO Note: {todayHoliday.ceo_note}</p>}
+          
         </div>
       )}
 
