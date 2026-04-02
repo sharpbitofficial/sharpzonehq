@@ -12,17 +12,17 @@ const NewsletterSection = () => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await supabase
-      .from("newsletter_subscriptions")
-      .insert({ email });
+    const { error } = await (supabase as any).rpc("submit_newsletter_subscription", {
+      _email: email,
+    });
 
     setLoading(false);
 
     if (error) {
-      if (error.code === "23505") {
+      if (error.code === "23505" || error.message?.toLowerCase().includes("duplicate")) {
         toast.error("You are already subscribed!");
       } else {
-        toast.error("Subscription failed. Please try again.");
+        toast.error(error.message || "Subscription failed. Please try again.");
       }
       return;
     }

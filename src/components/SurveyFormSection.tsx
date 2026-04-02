@@ -35,15 +35,14 @@ const SurveyFormSection = () => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await supabase.from("form_responses").insert([{
-      responses: formData as any,
-      submitted_at: new Date().toISOString(),
-    }]);
+    const { error } = await (supabase as any).rpc("submit_form_response", {
+      _responses: formData as any,
+    });
 
     setLoading(false);
 
     if (error) {
-      toast.error("Failed to submit form. Please try again.");
+      toast.error(error.message || "Failed to submit form. Please try again.");
       return;
     }
 

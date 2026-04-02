@@ -544,6 +544,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_role_audit_logs: {
+        Row: {
+          action: string
+          actor_user_id: string | null
+          created_at: string
+          id: string
+          new_role: Database["public"]["Enums"]["app_role"] | null
+          previous_role: Database["public"]["Enums"]["app_role"] | null
+          target_user_id: string
+        }
+        Insert: {
+          action: string
+          actor_user_id?: string | null
+          created_at?: string
+          id?: string
+          new_role?: Database["public"]["Enums"]["app_role"] | null
+          previous_role?: Database["public"]["Enums"]["app_role"] | null
+          target_user_id: string
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string | null
+          created_at?: string
+          id?: string
+          new_role?: Database["public"]["Enums"]["app_role"] | null
+          previous_role?: Database["public"]["Enums"]["app_role"] | null
+          target_user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -629,6 +659,32 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      submit_employee_application: {
+        Args: {
+          _address: string
+          _email: string
+          _full_name: string
+          _institution?: string
+          _phone: string
+          _profession: string
+        }
+        Returns: string
+      }
+      submit_form_response: { Args: { _responses: Json }; Returns: string }
+      submit_newsletter_subscription: {
+        Args: { _email: string }
+        Returns: string
+      }
+      validate_coupon_code: {
+        Args: { _code: string }
+        Returns: {
+          code: string
+          discount_percent: number
+          expires_at: string
+          id: string
+          is_valid: boolean
+        }[]
       }
     }
     Enums: {

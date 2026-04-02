@@ -1,1 +1,4 @@
 project_id = "kzzgrbbylgyrthmaskuo"
+
+[functions.manage-employee-application]
+verify_jwt = true
