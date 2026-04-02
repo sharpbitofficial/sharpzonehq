@@ -13,6 +13,8 @@ import EmployeeSignup from "./pages/EmployeeSignup.tsx";
 import EmployeeDashboard from "./pages/EmployeeDashboard.tsx";
 import Profile from "./pages/Profile.tsx";
 import Settings from "./pages/Settings.tsx";
+import ForgotPassword from "./pages/ForgotPassword.tsx";
+import ResetPassword from "./pages/ResetPassword.tsx";
 import Blog from "./pages/Blog.tsx";
 import BlogPost from "./pages/BlogPost.tsx";
 import AdminPanel from "./pages/AdminPanel.tsx";
@@ -35,6 +37,8 @@ const App = () => (
             <Route path="/employee-login" element={<EmployeeLogin />} />
             <Route path="/employee-signup" element={<EmployeeSignup />} />
             <Route path="/employee-dashboard" element={<EmployeeDashboard />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/blog" element={<Blog />} />

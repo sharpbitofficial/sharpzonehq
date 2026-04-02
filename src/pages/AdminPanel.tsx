@@ -333,7 +333,7 @@ const TaskRosterTab = () => {
 
 /* ============ EMPLOYEE APPLICATIONS ============ */
 const ApplicationsTab = () => {
-  const { user } = useAuth();
+  const { user, isCeo } = useAuth();
   const { data: apps = [], refetch } = useQuery({
     queryKey: ["admin-applications"],
     queryFn: async () => {
@@ -343,22 +343,24 @@ const ApplicationsTab = () => {
   });
 
   const handleAction = async (app: any, action: "approved" | "rejected") => {
-    // Update application status
-    await supabase.from("employee_applications").update({
-      status: action,
-      reviewed_by: user!.id,
-      reviewed_at: new Date().toISOString(),
-    }).eq("id", app.id);
+    const { data, error } = await supabase.functions.invoke("manage-employee-application", {
+      body: {
+        applicationId: app.id,
+        action,
+      },
+    });
+
+    if (error) {
+      toast.error(error.message || "Failed to update application.");
+      return;
+    }
 
     if (action === "approved") {
-      // Find user by email and assign staff role
-      const { data: profiles } = await supabase.from("profiles").select("id").limit(1000);
-      // We need to find the user. Since we can't query auth.users, we look up by email in the application
-      // and assign role via edge function or direct insert if user already exists
-      toast.success(`Application approved! The employee can now log in.`);
+      toast.success(data?.employeeLinked === false ? "Application approved, but no matching employee account was found yet." : "Application approved! The employee can now log in.");
     } else {
       toast.success("Application rejected.");
     }
+
     refetch();
   };
 
@@ -381,7 +383,7 @@ const ApplicationsTab = () => {
                 <p className="text-xs text-gray-400">{app.address}</p>
                 <p className="text-xs text-gray-400 mt-1">Applied: {new Date(app.created_at).toLocaleDateString()}</p>
               </div>
-              {app.status === "pending" && (
+              {app.status === "pending" && isCeo && (
                 <div className="flex gap-2">
                   <button onClick={() => handleAction(app, "approved")} className="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700">
                     <CheckCircle className="w-3 h-3" /> Approve

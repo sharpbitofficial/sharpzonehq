@@ -23,23 +23,7 @@ const EmployeeSignup = () => {
     e.preventDefault();
     setLoading(true);
 
-    // 1. Submit employee application
-    const { error: appError } = await supabase.from("employee_applications").insert({
-      full_name: form.full_name,
-      phone: form.phone,
-      email: form.email,
-      address: form.address,
-      profession: form.profession,
-      institution: form.institution || null,
-    });
-
-    if (appError) {
-      toast.error("Failed to submit application: " + appError.message);
-      setLoading(false);
-      return;
-    }
-
-    // 2. Create the auth account (will default to 'customer' role, CEO upgrades to 'staff' on approval)
+    // 1. Create the auth account (will default to 'customer' role, CEO upgrades to 'staff' on approval)
     const { error: signupError } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
@@ -49,16 +33,28 @@ const EmployeeSignup = () => {
       },
     });
 
-    setLoading(false);
-
     if (signupError) {
       toast.error(signupError.message);
+      setLoading(false);
       return;
     }
 
-    // 3. Create high-priority notification for CEO
-    // This runs with anon key so it'll only insert if RLS allows. 
-    // We insert regardless — the CEO notification policy handles visibility.
+    // 2. Submit employee application through a validated backend function
+    const { error: appError } = await (supabase as any).rpc("submit_employee_application", {
+      _full_name: form.full_name,
+      _phone: form.phone,
+      _email: form.email,
+      _address: form.address,
+      _profession: form.profession,
+      _institution: form.institution || null,
+    });
+
+    setLoading(false);
+
+    if (appError) {
+      toast.error(appError.message || "Account created, but the application could not be submitted.");
+      return;
+    }
 
     toast.success("Application submitted! Please verify your email. The CEO will review and approve your account.", { duration: 6000 });
     navigate("/");
