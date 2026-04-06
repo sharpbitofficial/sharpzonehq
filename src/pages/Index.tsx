@@ -1,3 +1,5 @@
+import { useState } from "react";
+import EntryAnimation from "@/components/EntryAnimation";
 import HeroSection from "@/components/HeroSection";
 import SurveyFormSection from "@/components/SurveyFormSection";
 import ServicesSection from "@/components/ServicesSection";
@@ -14,22 +16,29 @@ import HamburgerMenu from "@/components/HamburgerMenu";
 import Footer from "@/components/Footer";
 
 const Index = () => {
+  const [showContent, setShowContent] = useState(false);
+
   return (
     <div className="min-h-screen bg-background">
-      <HamburgerMenu />
-      <HeroSection />
-      <SurveyFormSection />
-      <ServicesSection />
-      <PortfolioSection />
-      <TeamSection />
-      <TestimonialsSection />
-      <PartnersSection />
-      <BlogSection />
-      <FAQSection />
-      <NewsletterSection />
-      <ContactSection />
-      <Footer />
-      <DynamicIsland />
+      {!showContent && <EntryAnimation onComplete={() => setShowContent(true)} />}
+      {showContent && (
+        <>
+          <HamburgerMenu />
+          <HeroSection />
+          <SurveyFormSection />
+          <ServicesSection />
+          <PortfolioSection />
+          <TeamSection />
+          <TestimonialsSection />
+          <PartnersSection />
+          <BlogSection />
+          <FAQSection />
+          <NewsletterSection />
+          <ContactSection />
+          <Footer />
+          <DynamicIsland />
+        </>
+      )}
     </div>
   );
 };
