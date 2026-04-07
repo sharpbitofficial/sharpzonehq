@@ -17,6 +17,7 @@ const ChatBot = () => {
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const isLoggedIn = !!user;
   const isStaff = roles.some(r => ["staff", "admin", "ceo"].includes(r));
 
   const { data: stats } = useQuery({
@@ -57,6 +58,7 @@ const ChatBot = () => {
   }, [messages]);
 
   const getGreeting = () => {
+    if (!isLoggedIn) return "Welcome to SharpZone! 👋 How can I help you today? You can ask about our services, contact info, or anything else.";
     if (isCeo) return "Honourable Sir, what would you like to know?";
     if (isStaff) return "Welcome Sir/Madam, how may I assist you today?";
     return "Welcome Sir/Madam, how may I assist you?";
@@ -75,7 +77,6 @@ const ChatBot = () => {
     setInput("");
     setLoading(true);
 
-    // Simulate brief thinking
     await new Promise(r => setTimeout(r, 500));
     const response = generateResponse(input.toLowerCase());
     setLoading(false);
@@ -83,9 +84,10 @@ const ChatBot = () => {
   };
 
   const generateResponse = (query: string): string => {
-    const prefix = isCeo ? "Honourable Sir" : "Sir/Madam";
+    const prefix = !isLoggedIn ? "Dear visitor" : isCeo ? "Honourable Sir" : "Sir/Madam";
 
-    if (isCeo || isAdmin) {
+    // CEO/Admin queries
+    if (isLoggedIn && (isCeo || isAdmin)) {
       if (query.includes("order") || query.includes("revenue") || query.includes("sales")) {
         return `${prefix}, here's your business summary:\n\n📦 Total Orders: ${stats?.totalOrders || 0}\n⏳ Pending Orders: ${stats?.pendingOrders || 0}\n💰 Total Revenue: ৳${stats?.totalRevenue || 0}\n\nWould you like more details?`;
       }
@@ -118,7 +120,8 @@ const ChatBot = () => {
       }
     }
 
-    if (isStaff) {
+    // Staff queries
+    if (isLoggedIn && isStaff) {
       if (query.includes("task") || query.includes("work") || query.includes("assignment")) {
         const pending = myTasks?.filter((t: any) => t.status === "pending").length || 0;
         const inProgress = myTasks?.filter((t: any) => t.status === "in_progress").length || 0;
@@ -133,24 +136,45 @@ const ChatBot = () => {
       }
     }
 
-    // General user queries
-    if (query.includes("order") || query.includes("status")) {
+    // General / public queries (works without login)
+    if (query.includes("service") || query.includes("event") || query.includes("what do you do") || query.includes("offer")) {
+      return `${prefix}, SharpZone offers professional graphic design, web development, video editing, and digital marketing services. Browse our Services section on the homepage for details and pricing!`;
+    }
+    if (query.includes("price") || query.includes("cost") || query.includes("rate")) {
+      return `${prefix}, our pricing depends on the service. Visit the Services section on our homepage to see individual service prices, or contact us for a custom quote!`;
+    }
+    if (query.includes("contact") || query.includes("reach") || query.includes("email") || query.includes("phone")) {
+      return `${prefix}, reach us at:\n📧 sharpzone.official@gmail.com\n📱 WhatsApp: +880-194-2485183\n💬 Or use this chat!\n\nWe'd love to hear from you!`;
+    }
+    if (query.includes("order") || query.includes("status") || query.includes("track")) {
+      if (!isLoggedIn) {
+        return `${prefix}, to track your orders, please log in first. You can sign in from the menu or visit the login page.`;
+      }
       return `${prefix}, you can view your order status in your Profile section under "My Orders".`;
     }
-    if (query.includes("service") || query.includes("event")) {
-      return `${prefix}, browse our Services section on the homepage to see available events and place orders.`;
+    if (query.includes("join") || query.includes("career") || query.includes("work with") || query.includes("employee") || query.includes("job")) {
+      return `${prefix}, we're always looking for talented people! You can apply to join the SharpZone team through the Employee Sign Up page. The CEO will review your application personally.`;
     }
-    if (query.includes("contact")) {
-      return `${prefix}, reach us at:\n📧 sharpzone.official@gmail.com\n📱 WhatsApp: +880-194-2485183\n💬 Or use this chat!`;
+    if (query.includes("about") || query.includes("who")) {
+      return `${prefix}, SharpZone is a professional creative agency specializing in graphic design, web development, and digital solutions. Founded with a vision of precision in every pixel! ✨`;
     }
-    if (query.includes("help") || query.includes("what can you")) {
-      return `${prefix}, I can help with:\n📦 Order tracking\n🎪 Service information\n📞 Contact options\n👤 Account details\n\nWhat would you like to know?`;
+    if (query.includes("blog") || query.includes("article")) {
+      return `${prefix}, check out our Blog section for the latest articles on design, technology, and creative tips!`;
+    }
+    if (query.includes("help") || query.includes("what can you") || query.includes("hi") || query.includes("hello")) {
+      const baseHelp = `${prefix}, I can help with:\n\n🎨 Service information & pricing\n📞 Contact details\n📝 Blog & articles\n💼 Career opportunities`;
+      if (isLoggedIn) {
+        return baseHelp + `\n📦 Order tracking\n👤 Account details\n\nWhat would you like to know?`;
+      }
+      return baseHelp + `\n🔐 Login & signup guidance\n\nWhat would you like to know?`;
     }
 
-    return `${prefix}, I'm not sure about that. Try asking about ${isCeo ? "orders, revenue, customers, tasks, applications, holidays, or reports" : isStaff ? "your tasks, notifications, or contacting the CEO" : "orders, services, or contact information"}.`;
+    return `${prefix}, I'm not sure about that. Try asking about ${
+      isCeo ? "orders, revenue, customers, tasks, applications, holidays, or reports" :
+      isStaff ? "your tasks, notifications, or contacting the CEO" :
+      "our services, pricing, contact info, or career opportunities"
+    }.`;
   };
-
-  if (!user) return null;
 
   return (
     <>
@@ -158,6 +182,7 @@ const ChatBot = () => {
         <button
           onClick={() => setIsOpen(true)}
           className="fixed bottom-24 right-4 w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg hover:scale-110 transition-transform duration-300 flex items-center justify-center z-40"
+          aria-label="Open chat"
         >
           <MessageCircle className="w-6 h-6" />
         </button>
@@ -169,7 +194,7 @@ const ChatBot = () => {
             <div>
               <h3 className={`font-display text-sm font-bold ${isCeo ? "text-white" : "text-foreground"}`}>SharpZone Assistant</h3>
               <p className={`text-xs ${isCeo ? "text-white/70" : "text-muted-foreground"}`}>
-                {isCeo ? "CEO Mode — Full Access" : isStaff ? "Employee Mode" : "Always here to help"}
+                {isCeo ? "CEO Mode — Full Access" : isStaff ? "Employee Mode" : isLoggedIn ? "Always here to help" : "Ask us anything!"}
               </p>
             </div>
             <button onClick={() => setIsOpen(false)} className={`p-1 rounded-lg transition ${isCeo ? "hover:bg-white/10 text-white" : "hover:bg-secondary text-foreground"}`}>
