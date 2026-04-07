@@ -13,23 +13,34 @@ const Login = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (error) {
-      toast.error(error.message);
-    } else {
-      // Check if CEO
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        toast.error(error.message);
+        setLoading(false);
+        return;
+      }
+      // Check roles
       const { data: roles } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", data.user.id);
       const isCeo = roles?.some((r) => r.role === "ceo");
+      const isAdmin = roles?.some((r) => r.role === "admin" || r.role === "ceo");
       if (isCeo) {
         toast.success("You Are Welcome Honourable CEO Mahdin Hossain Mahin Sir!", { duration: 5000 });
+        navigate("/admin");
+      } else if (isAdmin) {
+        toast.success("Welcome back, Admin!");
+        navigate("/admin");
       } else {
         toast.success("Welcome back, Sir/Madam!");
+        navigate("/");
       }
-      navigate("/");
+    } catch (err) {
+      toast.error("Network error. Please check your internet connection and try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
