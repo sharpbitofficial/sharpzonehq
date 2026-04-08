@@ -20,13 +20,17 @@ const Login = () => {
         setLoading(false);
         return;
       }
-      // Check roles
-      const { data: roles } = await supabase
+      // Wait briefly for AuthContext to process the new session & roles
+      toast.success("Signed in! Redirecting...");
+      // Small delay to let AuthContext onAuthStateChange fire and fetch roles
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Re-check roles from DB to determine redirect
+      const { data: rolesData } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", data.user.id);
-      const isCeo = roles?.some((r) => r.role === "ceo");
-      const isAdmin = roles?.some((r) => r.role === "admin" || r.role === "ceo");
+      const isCeo = rolesData?.some((r) => r.role === "ceo");
+      const isAdmin = rolesData?.some((r) => r.role === "admin" || r.role === "ceo");
       if (isCeo) {
         toast.success("You Are Welcome Honourable CEO Mahdin Hossain Mahin Sir!", { duration: 5000 });
         navigate("/admin");
@@ -35,10 +39,15 @@ const Login = () => {
         navigate("/admin");
       } else {
         toast.success("Welcome back, Sir/Madam!");
-        navigate("/");
+        navigate("/profile");
       }
-    } catch (err) {
-      toast.error("Network error. Please check your internet connection and try again.");
+    } catch (err: any) {
+      console.error("Login error:", err);
+      if (err?.message?.includes("Failed to fetch") || err?.name === "TypeError") {
+        toast.error("ইন্টারনেট কানেকশন চেক করুন। VPN ব্যবহার করে আবার চেষ্টা করুন।", { duration: 6000 });
+      } else {
+        toast.error("Login failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
