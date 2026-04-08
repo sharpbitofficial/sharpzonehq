@@ -30,6 +30,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<AuthContextType["profile"]>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [rolesReady, setRolesReady] = useState(false);
 
   const fetchUserData = async (userId: string) => {
     try {
@@ -39,8 +40,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       ]);
       if (profileRes.data) setProfile(profileRes.data);
       if (rolesRes.data) setRoles(rolesRes.data.map((r) => r.role));
+      setRolesReady(true);
     } catch (err) {
       console.error("Error fetching user data:", err);
+      setRolesReady(true);
     }
   };
 
@@ -62,6 +65,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         if (!mounted) return;
+        // Mark loading while we fetch fresh role data
+        setIsLoading(true);
+        setRolesReady(false);
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
@@ -69,6 +75,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         } else {
           setProfile(null);
           setRoles([]);
+          setRolesReady(true);
         }
         if (mounted) setIsLoading(false);
       }
@@ -86,12 +93,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setProfile(null);
     setRoles([]);
+    setRolesReady(false);
   };
 
   return (
     <AuthContext.Provider
       value={{
-        session, user, profile, roles, isLoading,
+        session, user, profile, roles, isLoading: isLoading || !rolesReady,
         isCeo: roles.includes("ceo"),
         isAdmin: roles.includes("admin") || roles.includes("ceo"),
         signOut,
