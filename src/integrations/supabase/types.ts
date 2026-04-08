@@ -676,6 +676,10 @@ export type Database = {
         Args: { _email: string }
         Returns: string
       }
+      update_order_feedback: {
+        Args: { _feedback: string; _order_id: string; _rating: number }
+        Returns: undefined
+      }
       validate_coupon_code: {
         Args: { _code: string }
         Returns: {
